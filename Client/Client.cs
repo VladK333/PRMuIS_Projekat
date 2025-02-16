@@ -36,7 +36,7 @@ namespace Client
                 return;
             }
 
-            // TCP konekcija sa dispecerskim serverom
+            // TCP konekcija sa dispecerskim serverom (potrebno i za 2.zadatak)
             Console.WriteLine("\nKreiram TCP konekciju sa dispecerskim serverom...");
             Socket tcpServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 52000);
@@ -45,6 +45,7 @@ namespace Client
             {
                 tcpServerSocket.Connect(serverEndPoint);
                 Console.WriteLine("Povezivanje sa serverom je uspesno.");
+                tcpServerSocket.Blocking = false;
             }
             catch (Exception ex)
             {
@@ -52,14 +53,15 @@ namespace Client
                 return;
             }
 
-            // UDP uticnica za slanje upravljackih podataka
+
+            // UDP uticnica za prijem podataka
             Socket udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint udpEndPoint = new IPEndPoint(IPAddress.Any, 60001);
-            Console.WriteLine($"UDP uticnica (upravljacka) otvorena na IP adresi {udpEndPoint.Address} i portu {udpEndPoint.Port}");
+            udpSocket.Close();
 
             // TCP uticnica za vezu sa vremenskim senzorom
             Socket sensorSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint sensorEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 60002);
+            IPEndPoint sensorEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 60002); //Klijent mora da zna tacnu IP adresu servera   
             Console.WriteLine($"TCP uticnica (senzorska) otvorena na IP adresi {sensorEndPoint.Address} i portu {sensorEndPoint.Port}");
 
             Console.WriteLine("Povezivanje sa senzorom...");
@@ -109,12 +111,13 @@ namespace Client
                 Console.WriteLine($"Izracunata reaktivna snaga za vetrogenerator: {reaktivnaSnaga:F2} kVAR.");
                 PosaljitePodatkeNaServer(tcpServerSocket, generatorType, aktivnaSnaga, reaktivnaSnaga);
             }
+            //3.zatvaranje konekcije
             Console.WriteLine("Klijent zavrsava sa radom...");
             sensorSocket.Close();
             tcpServerSocket.Close();
             Console.ReadLine();
         }
-
+        //3.
         static double UnesiNominalnuSnagu(double min, double max)
         {
             double snaga;

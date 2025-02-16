@@ -28,7 +28,7 @@ namespace Server
         }
 
         static void Main(string[] args)
-        {
+        { 
             //2. Zadatak: Dispecerski server 
             Socket tcpServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             List<Socket> clients = new List<Socket>();
@@ -39,8 +39,10 @@ namespace Server
             {
                 IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 52000);
                 tcpServerSocket.Bind(localEndPoint);
-                tcpServerSocket.Listen(1);
+                tcpServerSocket.Listen(5);
                 Console.WriteLine("TCP server je pokrenut.\n");
+
+                tcpServerSocket.Blocking = false;
             }
             catch (SocketException ex)
             {
@@ -48,17 +50,27 @@ namespace Server
                 return;
             }
 
-            //7. Zadatak: Istovremeni, neblokirajuci rad sa vise klijenata
+            //3.UDP uticnica
+            Socket udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            IPEndPoint udpEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 60001);
+            string responseMessage = "Posaljite podatke";
+            byte[] responseBuffer = Encoding.UTF8.GetBytes(responseMessage);
+            udpSocket.SendTo(responseBuffer, udpEndPoint);
+            Console.WriteLine("Poruka poslata klijentu: " + responseMessage);
+            udpSocket.Close();
+
+            //2. i 7. Zadatak: Istovremeni, neblokirajuci rad sa vise klijenata
             while (true)
             {
                 List<Socket> cekanjeZaCitanje = new List<Socket>(clients) { tcpServerSocket };
-                Socket.Select(cekanjeZaCitanje, null, null, -1);
+                Socket.Select(cekanjeZaCitanje, null, null, 1000000);//0 odmah vraca rezultat, -1 ceka neograniceno dugo
 
                 foreach (Socket socket in cekanjeZaCitanje)
                 {
                     if (socket == tcpServerSocket)
                     {
-                        Socket noviKlijent = tcpServerSocket.Accept();
+                        Socket noviKlijent = tcpServerSocket.Accept();//2. koristi funkciju Accept() kako bi prihvatio zahtjev
+                        noviKlijent.Blocking = false;   
                         clients.Add(noviKlijent);
                         Console.WriteLine("Novi klijent povezan.");
                     }
@@ -86,13 +98,13 @@ namespace Server
                         {
                             Console.WriteLine("Greska u komunikaciji sa klijentom. Zatvaranje konekcije.");
                             clients.Remove(socket);
-                            socket.Close();
+                            socket.Close();//2. zatvaranje konekcije
                         }
                     }
                 }
             }
         }
-
+        
         static void ObradiPrimljenePodatke(string primljeniPodaci)
         {
             try 
@@ -106,7 +118,7 @@ namespace Server
                     double reaktivnaSnaga = double.Parse(delovi[2]);
 
                     string idGen = generatorType == "Solarni panel" ? "sp" : "vg";
-
+                    //6.
                     Console.WriteLine($"Primljena poruka:\nGenerator: {generatorType}, Aktivna snaga: {aktivnaSnaga} kW, Reaktivna snaga: {reaktivnaSnaga} kVAR");
 
                     //10. Zadatak: Sakupljanje informacija o proizvodnji
@@ -145,9 +157,6 @@ namespace Server
                 Console.WriteLine("Solarni paneli i vetrogeneratori su proizveli istu kolicinu energije.");
 
             Console.WriteLine("Zatvaranje servera...");
-            Environment.Exit(0 );
-
-
         }
     }
 }
