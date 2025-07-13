@@ -55,9 +55,14 @@ namespace Client
 
             // UDP uticnica za prijem podataka
             Socket udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            udpSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
+            IPEndPoint localEP = (IPEndPoint)udpSocket.LocalEndPoint;
+            Console.WriteLine($"UDP upravljacka uticnica otvorena na {localEP.Address}:{localEP.Port}");
+
             IPEndPoint serverUdpEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 60001); // server
             byte[] emptyMessage = new byte[0];
             udpSocket.SendTo(emptyMessage, serverUdpEndPoint);
+
             // Prijem poruke
             byte[] udp_buffer = new byte[1024];
             EndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
@@ -117,7 +122,7 @@ namespace Client
                 Console.WriteLine($"Izracunata reaktivna snaga za vetrogenerator: {reaktivnaSnaga:F2} kVAR.");
                 PosaljitePodatkeNaServer(tcpServerSocket, generatorType, aktivnaSnaga, reaktivnaSnaga);
             }
-            //3.zatvaranje konekcije
+            //Zatvaranje konekcije
             Console.WriteLine("Klijent zavrsava sa radom...");
             udpSocket.Close();
             sensorSocket.Close();
@@ -219,7 +224,5 @@ namespace Client
             double reaktivnaSnaga = aktivnaSnaga * 0.05;
             return (aktivnaSnaga, reaktivnaSnaga);
         }
-
-       
     }
 }

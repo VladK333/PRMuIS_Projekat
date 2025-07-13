@@ -16,7 +16,7 @@ namespace Senzor
             sensorSocket.Listen(5);
             sensorSocket.Blocking = false;  
 
-            Console.WriteLine("Senzor čeka na povezivanje klijenata...\n");
+            Console.WriteLine("Senzor ceka na povezivanje klijenata...\n");
 
             //7.Zadatak: Istovremeni, neblokirajuci rad sa više klijenata
             List<Socket> clients = new List<Socket>();
@@ -41,7 +41,7 @@ namespace Senzor
                         }
                         catch (SocketException ex)
                         {
-                            Console.WriteLine($"Greška pri prihvatanju klijenta: {ex.Message}");
+                            Console.WriteLine($"Greska pri prihvatanju klijenta: {ex.Message}");
                         }
                     }
                     else
@@ -55,7 +55,7 @@ namespace Senzor
                         }
                         catch (SocketException ex)
                         {
-                            Console.WriteLine($"Greška u komunikaciji sa klijentom: {ex.Message}. Zatvaranje konekcije.");
+                            Console.WriteLine($"Greska u komunikaciji sa klijentom: {ex.Message}. Zatvaranje konekcije.");
                             klijentiZaBrisanje.Add(socket);
                             socket.Close();
                             continue;
@@ -93,7 +93,7 @@ namespace Senzor
                         }
                         catch (SocketException ex)
                         {
-                            Console.WriteLine($"Greška prilikom slanja podataka: {ex.Message}");
+                            Console.WriteLine($"Greska prilikom slanja podataka: {ex.Message}");
                         }
 
                         klijentiZaBrisanje.Add(socket);

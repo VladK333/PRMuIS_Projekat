@@ -54,7 +54,7 @@ namespace Server
             Socket udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Any, 60001);
             udpSocket.Bind(serverEndPoint);
-            Console.WriteLine($"UDP upravljačka utičnica otvorena na lokalnoj adresi i portu: 127.0.0.1:{serverEndPoint.Port}");
+            Console.WriteLine($"UDP upravljacka uticnica otvorena na lokalnoj adresi i portu: 127.0.0.1:{serverEndPoint.Port}\n");
 
             //2. i 7. Zadatak: Istovremeni, neblokirajuci rad sa vise klijenata
             while (true)
@@ -69,13 +69,13 @@ namespace Server
                         // UDP poruka
                         byte[] buffer = new byte[1024];
                         EndPoint clientEP = new IPEndPoint(IPAddress.Any, 0);
-                        int received = udpSocket.ReceiveFrom(buffer, ref clientEP);
+                        int received = udpSocket.ReceiveFrom(buffer, ref clientEP); //prima se prazna poruka i IP i port klijenta
                         Console.WriteLine($"Primljena poruka od klijenta sa {clientEP}");
 
                         string responseMessage = "Posaljite podatke";
                         byte[] responseBuffer = Encoding.UTF8.GetBytes(responseMessage);
                         udpSocket.SendTo(responseBuffer, clientEP);
-                        Console.WriteLine("Poslata upravljačka poruka klijentu.");
+                        Console.WriteLine("Poslata upravljacka poruka klijentu.");
                     }
                     else if (socket == tcpServerSocket)
                     {
@@ -115,6 +115,7 @@ namespace Server
             }
         }
         
+        //6. Zadatak: Prikaz proizvodnje
         static void ObradiPrimljenePodatke(string primljeniPodaci)
         {
             try 
