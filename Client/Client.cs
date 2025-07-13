@@ -45,7 +45,6 @@ namespace Client
             {
                 tcpServerSocket.Connect(serverEndPoint);
                 Console.WriteLine("Povezivanje sa serverom je uspesno.");
-                tcpServerSocket.Blocking = false;
             }
             catch (Exception ex)
             {
@@ -56,8 +55,15 @@ namespace Client
 
             // UDP uticnica za prijem podataka
             Socket udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint udpEndPoint = new IPEndPoint(IPAddress.Any, 60001);
-            udpSocket.Close();
+            IPEndPoint serverUdpEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 60001); // server
+            byte[] emptyMessage = new byte[0];
+            udpSocket.SendTo(emptyMessage, serverUdpEndPoint);
+            // Prijem poruke
+            byte[] udp_buffer = new byte[1024];
+            EndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
+            int received = udpSocket.ReceiveFrom(udp_buffer, ref remoteEP);
+            string msg = Encoding.UTF8.GetString(udp_buffer, 0, received);
+            Console.WriteLine("Primljena upravljacka poruka: " + msg);
 
             // TCP uticnica za vezu sa vremenskim senzorom
             Socket sensorSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -113,6 +119,7 @@ namespace Client
             }
             //3.zatvaranje konekcije
             Console.WriteLine("Klijent zavrsava sa radom...");
+            udpSocket.Close();
             sensorSocket.Close();
             tcpServerSocket.Close();
             Console.ReadLine();

@@ -52,22 +52,32 @@ namespace Server
 
             //3.UDP uticnica
             Socket udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint udpEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 60001);
-            string responseMessage = "Posaljite podatke";
-            byte[] responseBuffer = Encoding.UTF8.GetBytes(responseMessage);
-            udpSocket.SendTo(responseBuffer, udpEndPoint);
-            Console.WriteLine("Poruka poslata klijentu: " + responseMessage);
-            udpSocket.Close();
+            IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Any, 60001);
+            udpSocket.Bind(serverEndPoint);
+            Console.WriteLine($"UDP upravljačka utičnica otvorena na lokalnoj adresi i portu: 127.0.0.1:{serverEndPoint.Port}");
 
             //2. i 7. Zadatak: Istovremeni, neblokirajuci rad sa vise klijenata
             while (true)
             {
-                List<Socket> cekanjeZaCitanje = new List<Socket>(clients) { tcpServerSocket };
+                List<Socket> cekanjeZaCitanje = new List<Socket>(clients) { tcpServerSocket , udpSocket };
                 Socket.Select(cekanjeZaCitanje, null, null, 1000000);//0 odmah vraca rezultat, -1 ceka neograniceno dugo
 
                 foreach (Socket socket in cekanjeZaCitanje)
                 {
-                    if (socket == tcpServerSocket)
+                    if (socket == udpSocket)
+                    {
+                        // UDP poruka
+                        byte[] buffer = new byte[1024];
+                        EndPoint clientEP = new IPEndPoint(IPAddress.Any, 0);
+                        int received = udpSocket.ReceiveFrom(buffer, ref clientEP);
+                        Console.WriteLine($"Primljena poruka od klijenta sa {clientEP}");
+
+                        string responseMessage = "Posaljite podatke";
+                        byte[] responseBuffer = Encoding.UTF8.GetBytes(responseMessage);
+                        udpSocket.SendTo(responseBuffer, clientEP);
+                        Console.WriteLine("Poslata upravljačka poruka klijentu.");
+                    }
+                    else if (socket == tcpServerSocket)
                     {
                         Socket noviKlijent = tcpServerSocket.Accept();//2. koristi funkciju Accept() kako bi prihvatio zahtjev
                         noviKlijent.Blocking = false;   
